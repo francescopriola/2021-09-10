@@ -5,7 +5,11 @@
 package it.polito.tdp.yelp;
 
 import java.net.URL;
+import java.util.Collections;
+import java.util.List;
 import java.util.ResourceBundle;
+
+import it.polito.tdp.yelp.model.Business;
 import it.polito.tdp.yelp.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -17,6 +21,7 @@ import javafx.scene.control.TextField;
 public class FXMLController {
 	
 	private Model model;
+	private List<String> cities;
 
     @FXML // ResourceBundle that was given to the FXMLLoader
     private ResourceBundle resources;
@@ -37,10 +42,10 @@ public class FXMLController {
     private TextField txtX2; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbCitta"
-    private ComboBox<?> cmbCitta; // Value injected by FXMLLoader
+    private ComboBox<String> cmbCitta; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbB1"
-    private ComboBox<?> cmbB1; // Value injected by FXMLLoader
+    private ComboBox<Business> cmbB1; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbB2"
     private ComboBox<?> cmbB2; // Value injected by FXMLLoader
@@ -50,12 +55,42 @@ public class FXMLController {
     
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	txtResult.clear();
+    	cmbB1.getItems().clear();
+    	String city = this.cmbCitta.getValue();
     	
+    	if(city == null) {
+    		txtResult.appendText("Seleziona una città valida!\n");
+    		return;
+    	}
+    	
+    	this.model.creaGrafo(city);
+    	
+    	txtResult.appendText("GRAFO CREATO!\n");
+    	txtResult.appendText("#VERTICI: " + this.model.getNVetici() + "\n");
+    	txtResult.appendText("#ARCHI: " + this.model.getNArchi() + "\n");
+    	
+    	cmbB1.getItems().addAll(this.model.getVertici());
     }
 
     @FXML
     void doCalcolaLocaleDistante(ActionEvent event) {
-
+    	txtResult.clear();
+    	
+    	if(cmbB1.getItems().isEmpty()) {
+    		txtResult.appendText("Seleziona prima una città e crea il grafico!\n");
+    		return;
+    	}
+    	
+    	Business b1 = cmbB1.getValue();
+    	
+    	if(b1 == null) {
+    		txtResult.appendText("Seleziona un locale b1 valido!\n");
+    		return;
+    	}
+    	
+    	txtResult.appendText("LOCALE PIU' DISTANTE: \n");
+    	txtResult.appendText(this.model.getLocaleAdiacentePiuLontano(b1).getBusinessName() + " = " + this.model.getMaxDist() + "\n");
     	
     }
 
@@ -80,5 +115,9 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	
+    	this.cities = this.model.getAllCities();
+    	Collections.sort(cities);
+    	this.cmbCitta.getItems().addAll(cities);
     }
 }
